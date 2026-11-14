@@ -14,14 +14,15 @@
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { text-align: left; padding: 6px 3px; border-bottom: 1px solid #eee; }
   th { font-weight: 600; color: #666; }
-  .top { background: #e8f5e9; }
+  .top { background: #e8f5e9; font-weight: 600; }
+  .winpct { font-weight: 700; color: #0a7; }
   .refresh { background: #007aff; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; width: 100%; margin-top: 8px; }
   .loading { text-align: center; padding: 40px; color: #666; }
 </style>
 </head>
 <body>
   <h1>Live Horse Racing Analyzer</h1>
-  <div class="note">Full live data. Ranking: 70% market odds + 15% form + 15% barrier. Not a guarantee.</div>
+  <div class="note">Full live data. Win% = market-implied probability from best odds. Ranking also uses form + barrier. Not a guarantee.</div>
   <button class="refresh" onclick="load()">Refresh Live Data</button>
   <div id="results" class="loading">Loading...</div>
 
@@ -63,6 +64,7 @@ function analyze(race) {
       name: r.name || 'Unknown',
       number: r.number || '-',
       odds: best,
+      winPct: market * 100,
       barrier: r.barrier,
       form: r.form || '-',
       weight: r.weight,
@@ -92,13 +94,13 @@ async function load() {
         html += '<div>No priced runners</div></div>';
         return;
       }
-      html += `<table><tr><th>Rk</th><th>No</th><th>Horse</th><th>Odds</th><th>Barr</th><th>Form</th></tr>`;
+      html += `<table><tr><th>Rk</th><th>No</th><th>Horse</th><th>Odds</th><th>Win%</th><th>Barr</th><th>Form</th></tr>`;
       ranked.slice(0, 8).forEach((r, i) => {
         const cls = i === 0 ? 'top' : '';
-        html += `<tr class="${cls}"><td>${i+1}</td><td>${r.number}</td><td>${r.name}</td><td>${r.odds.toFixed(2)}</td><td>${r.barrier || '-'}</td><td>${r.form}</td></tr>`;
+        html += `<tr class="${cls}"><td>${i+1}</td><td>${r.number}</td><td>${r.name}</td><td>${r.odds.toFixed(2)}</td><td class="winpct">${r.winPct.toFixed(1)}%</td><td>${r.barrier || '-'}</td><td>${r.form}</td></tr>`;
       });
       const top = ranked[0];
-      html += `</table><div style="margin-top:8px;font-weight:600">Top: ${top.name} @ ${top.odds.toFixed(2)} (barrier ${top.barrier || '-'}, form ${top.form})</div></div>`;
+      html += `</table><div style="margin-top:8px;font-weight:600">Top: ${top.name} — ${top.winPct.toFixed(1)}% market probability @ ${top.odds.toFixed(2)}</div></div>`;
     });
     el.innerHTML = html;
   } catch (e) {
